@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<!-- 
+  The consent.html displays the text of your IRB-approved
+  consent form.  Even if you are not required to provide
+  a consent form, it is helpful to use this form to 
+  describe what people can do if an error comes up, etc...
+
+-->
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Psychology Experiment - Informed Consent Form</title>
+        <link rel="stylesheet" href="/static/css/bootstrap.min.css" type="text/css" />
+        <link rel="stylesheet" href="/static/css/style.css" type="text/css" />
+        <link rel="icon" href="/static/favicon.ico" />
+        <script type="text/javascript">
+            function onexit() {
+              self.close(); // no harm, no foul here
+            }
+        </script>
+		<style>
+			@media print {
+				body * {
+					visibility: hidden;
+				}
+				.legal, .legal * {
+					visibility: visible;
+				}
+				.legal {
+					position: absolute;
+					left: 0;
+					top: 0;
+					overflow:visible;
+				} 
+			}
+		</style>
+    </head>
+    <body>
+        <div id="container-consent">
+            <div id="consent">
+                <h1>We need your consent to proceed</h1>
+                <hr />
+                <div class="legal well">
+                    <p>
+                      You have been invited to take part in a research study named The Visual Determinants of Size in Natural Scenes.
+                    </p>
+                    <p class="consent-title">
+                      Consent Statement for Research
+                    </p>
+                    <p class="consent-header">
+                    Title of Study: The Visual Determinants of Size in Natural Scenes <br />
+                      IRB #: 041618 <br />
+                      Principal Investigator Name: John Philbeck, Ph.D. <br />
+                      Version Date: 7/09/20 <br />
+                    </p>
+                    <p class="consent-text">
+                      You are invited to participate in a research study under the direction of Dr. John Philbeck of the Department of Psychology, George Washington University (GWU).  Taking part in this research is entirely voluntary. Further information regarding this study may be obtained by contacting the Principal Investigator, John Philbeck, at bnavlab2@gmail.com
+                      <br /><br />
+                      The purpose of this study is to investigate how people determine the size of objects in pictures of natural scenes.
+                      <br /><br />
+                      If you choose to take part in this study, you will participate in a research activity that involves viewing a series of pictures and answering questions about them. For example, for each picture, you might be asked about the sizes or spatial relationships of objects in the scene, or what objects were present in the scene.  The total amount of time you will spend in connection with this study is about 20 minutes, and you will receive $2.50 as compensation for your participation.  You may refuse to answer any of the questions and you may stop your participation in this study at any time.
+                      <br /><br />
+                      Possible risks or discomforts you could experience during this study include: boredom or loss of confidentiality (for example, depending on where you are, someone might see you taking part in the study).
+                      <br /><br />
+                      You will not benefit directly from your participation in the study. The benefit to science and humankind that might result from this study is: a clearer understanding about how people perceive the size and spatial relationships among objects in natural scenes.
+                      <br /><br />
+                      Every effort will be made to keep your information confidential, however, this cannot be guaranteed.  We will not receive any information about you other than your responses to the study questions.  If results of this research study are reported in journals or at scientific meetings, the people who participated in this study will not be named or identified.
+                      <br /><br />
+                      The Office of Human Research of George Washington University, at telephone number (202) 994-2715, can provide further information about your rights as a research participant.
+                      <br /><br />
+                      Your willingness to participate in this research study is implied if you proceed.
+                      <br /><br />
+                      *Please keep a copy of this document in case you want to read it again.
+                      <br /><br />
+                      Please indicate whether you agree to participate:
+                    </p>
+
+                    <button type="button" class="btn btn-default btn-sm" onClick="window.print();">
+                    <span class="glyphicon glyphicon-print"></span> Print a copy of this
+                    </button>
+                </div>
+
+                <hr />
+                <h4>Do you understand and consent to these terms?</h4>
+                <br />
+
+                <center>
+                    <button type="button" class="btn btn-primary btn-lg" onClick="window.location='/exp?hitId={{ hitid }}&assignmentId={{ assignmentid }}&workerId={{ workerid }}'">
+                    <span class="glyphicon glyphicon-ok"></span> I agree 
+                    </button>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <button type="button" class="btn btn-danger btn-lg" onClick="onexit()">
+                    <span class="glyphicon glyphicon-ban-circle"></span> No thanks, I do not want to do this HIT
+                    </button>
+                </center>
+
+            </div>
+        </div>
+    </body>
+</html>
+
