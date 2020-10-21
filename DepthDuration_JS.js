@@ -6,18 +6,19 @@
 var thisData = {
   "subjID":[],
   "experimentName":[],
-  "versionName":[],
+  "sequenceName":[],
   "windowWidth":[],
   "windowHeight":[],
   "screenWidth":[],
   "screenHeight":[],
   "startDate":[],
   "startTime":[],
-  "trialNum":[],
-  "depthResponse":[],
+  "stimulus":[],
+  "duration": [],
+  "actual_depth": [],
+  "depth_estimate": [],
+  "unitSelection": []
 };
-
-// duration condition is in the json --> later consider logging the actual depth and duration from the json
 
 // set subject ID as a random 6 digit number
 var subjID = randomIntFromInterval(100000, 999999);
@@ -28,54 +29,43 @@ var startDate = start.getMonth() + "-" + start.getDate() + "-" + start.getFullYe
 var startTime = start.getHours() + "-" + start.getMinutes() + "-" + start.getSeconds();
 
 // initialize empty variables
-var endExpTime, startExpTime;
+var endExpTime, startExpTime; 
 
-// obj variables
-var categoryDict = {
-  "bathroom":["b1.png", "b2.png", "b3.png", "b4.png", "b5.png", "b6.png"],
-  "clothing":["c1.png", "c2.png", "c3.png", "c4.png", "c5.png", "c6.png"],
-  "electronics":["e1.png", "e2.png", "e3.png", "e4.png", "e5.png", "e6.png"],
-  "kitchen":["k1.png", "k2.png", "k3.png", "k4.png", "k5.png", "k6.png"],
-  "office":["o1.png", "o2.png", "o3.png", "o4.png", "o5.png", "o6.png"],
-  "sports":["s1.png", "s2.png", "s3.png", "s4.png", "s5.png", "s6.png"]
-};
-var cats = Object.keys(categoryDict);
-var objsPerCat = Object.values(categoryDict);
-var totalObjNum = cats.length * objsPerCat[0].length; //total number of categories times total number of objects in each category (use first category to represent all categories, since all categories have the same number of objects)
-var prevObjs = [];
+// unit preference variables 
+var pref = false // unit preference has not been made
+var unit = null
 
-// other dictionaries
-// var locationDict = {"top": [415, 80], "left": [230, 265], "right": [600, 265], "bottom": [415, 450]};
-var locationDict = {"top": [400, 100], "left": [250, 250], "right": [550, 250], "bottom": [400, 400]};
-var condsDict = {"NR_2":[2, "NR"], "SR_2":[2, "SR"], "NR_3":[3, "NR"], "SR_3":[3, "SR"]};
+// constant timing variables 
+var fixation_time = 500
+var mask_time = 500 
 
-// timing variables
-var objTime = 4000;
-var gaborTime = 2000;
+var practice_trial = 0 // counter that references the index of the practice_seq variable 
+var practice_seq = JSON.parse('[{"sequence": "sequence_A", "image": "new_ltq/002131_1", "duration": 250, "num": 1, "depth": 1.73, "image_path": "depth_duration_stimuli/002131_1/002131-original.jpg", "image_path_target": "depth_duration_stimuli/002131_1/002131_1-target.png", "mask_path": "masks/mask_252.jpg", "fixation_path": "fixation.jpg", "sampled": 0}, {"sequence": "sequence_A", "image": "new_ltq/002853_18", "duration": 750, "num": 2, "depth": 1.648, "image_path": "depth_duration_stimuli/002853_18/002853-original.jpg", "image_path_target": "depth_duration_stimuli/002853_18/002853_18-target.png", "mask_path": "masks/mask_129.jpg", "fixation_path": "fixation.jpg", "sampled": 0}, {"sequence": "sequence_A", "image": "new_ltq/002637_8", "duration": 500, "num": 3, "depth": 1.995, "image_path": "depth_duration_stimuli/002637_8/002637-original.jpg", "image_path_target": "depth_duration_stimuli/002637_8/002637_8-target.png", "mask_path": "masks/mask_2.jpg", "fixation_path": "fixation.jpg", "sampled": 0}]')
+var practiced = false // practice trials have not been completed 
 
-// accuracy variables
-var prevAcc = 1;
-var trialNum = 0;
-var trialInBlockNum = 0;
-var numCorr = 0;
+var trial = 0 //counter that references the index of the stim_seq variable
 
-// key info
-var keyDict = {"c": 90, "m": 0, "none": "none"}
+var counter = 0 // counter for logging 
 
-// block variables
-var thisBlockNum = 0;
-var totalBlocks = 3;
 
-// practice variables
-var pracTries = 0;
-var pracCondCount = 2; //how many times each condition is shown
-var pracTotalTrials = pracCondCount * Object.keys(condsDict).length; //so total trials for practice is 4 conditions x 2 times each = 8 trials
-var pracConds = {"NR_2":Array(pracCondCount).fill([2, "NR"]), "SR_2":Array(pracCondCount).fill([2, "SR"]), "NR_3":Array(pracCondCount).fill([3, "NR"]), "SR_3":Array(pracCondCount).fill([3, "SR"])};
+// PARTIAL SEQUENCE FOR TESTING PURPOSES (needs to be changed for actual experiment)
+var sequenceName = "test_sequence" // ** Needs to be: ex. 'updated_data_sequence_A.json'
+var stim_seq = JSON.parse('[{"sequence": "sequence_AF", "image": "depth_duration_stimuli/003292_12", "duration": 500, "num": 1, "depth": 2.335, "image_path": "depth_duration_stimuli/003292_12/003292-original.jpg", "image_path_target": "depth_duration_stimuli/003292_12/003292_12-target.png", "mask_path": "masks/mask_156.jpg", "fixation_path": "fixation.jpg", "sampled": 0}, {"sequence": "sequence_AF", "image": "depth_duration_stimuli/001451_10", "duration": 750, "num": 2, "depth": 1.564, "image_path": "depth_duration_stimuli/001451_10/001451-original.jpg", "image_path_target": "depth_duration_stimuli/001451_10/001451_10-target.png", "mask_path": "masks/mask_84.jpg", "fixation_path": "fixation.jpg", "sampled": 0}, {"sequence": "sequence_AF", "image": "depth_duration_stimuli/001920_15", "duration": 250, "num": 3, "depth": 4.752, "image_path": "depth_duration_stimuli/001920_15/001920-original.jpg", "image_path_target": "depth_duration_stimuli/001920_15/001920_15-target.png", "mask_path": "masks/mask_55.jpg", "fixation_path": "fixation.jpg", "sampled": 0}, {"sequence": "sequence_AF", "image": "depth_duration_stimuli/002467_5", "duration": 1000, "num": 4, "depth": 4.742, "image_path": "depth_duration_stimuli/002467_5/002467-original.jpg", "image_path_target": "depth_duration_stimuli/002467_5/002467_5-target.png", "mask_path": "masks/mask_61.jpg", "fixation_path": "fixation.jpg", "sampled": 0}, {"sequence": "sequence_AF", "image": "depth_duration_stimuli/002279_12", "duration": 500, "num": 5, "depth": 1.636, "image_path": "depth_duration_stimuli/002279_12/002279-original.jpg", "image_path_target": "depth_duration_stimuli/002279_12/002279_12-target.png", "mask_path": "masks/mask_34.jpg", "fixation_path": "fixation.jpg", "sampled": 0}, {"sequence": "sequence_AF", "image": "depth_duration_stimuli/002538_10", "duration": 1000, "num": 6, "depth": 3.271, "image_path": "depth_duration_stimuli/002538_10/002538-original.jpg", "image_path_target": "depth_duration_stimuli/002538_10/002538_10-target.png", "mask_path": "masks/mask_127.jpg", "fixation_path": "fixation.jpg", "sampled": 0}]')
+// for full experiment num_trials = 255
+var num_trials = 5 // 6 images, but since indexing starts at zero this should be 5
 
-// main experiment variables
-var experimentCondCount = 16;//how many times each condition is shown
-var totalTrials = experimentCondCount * Object.keys(condsDict).length; //so total trials for experiment block is 4 conditions x 16 times each = 64 trials
-var experimentConds = {"NR_2":Array(experimentCondCount).fill([2, "NR"]), "SR_2":Array(experimentCondCount).fill([2, "SR"]), "NR_3":Array(experimentCondCount).fill([3, "NR"]), "SR_3":Array(experimentCondCount).fill([3, "SR"])};
+// solves problem of last practice variables being saved in the estimate variable and getting recorded 
+// set to true once trial has actually begun NOT in the beginning of the function because the practice trial is still saved in the estimate variable
+var start_recording = false 
+
+// THIS IS THE IDEAL METHOD: ERROR - Access to XMLHttpRequest at 'file:///Users/prachi/Documents/depth_duration/mturk_code/depth_duration_MTurk/updated_data_sequence_A.json' from origin 'null' has been blocked by CORS policy: Cross origin requests are only supported for protocol schemes: http, data, chrome, chrome-extension, https.
+// var seq_filepath = 'updated_data_sequence_A.json'
+// $.ajax ({ url: seq_filepath, method: "GET"}) 
+// .success(function (response) { 
+//    var json = $.parseJSON (response); 
+//    console.log(json)
+// });
+// OR: https://www.w3schools.com/js/js_json_parse.asp#:~:text=Example%20%2D%20Parsing%20JSON&text=Use%20the%20JavaScript%20function%20JSON,will%20get%20a%20syntax%20error.
 
 // ----------------
 // set-up functions
@@ -83,15 +73,27 @@ var experimentConds = {"NR_2":Array(experimentCondCount).fill([2, "NR"]), "SR_2"
 
 $(document).ready(function(){
   // on open, add this text to the startingInstructions div and pre-load all stimuli
+  $(".buttonDivPg2").hide();
+  $(".buttonDivPg3").hide();
+  $(".buttonDivPg4").hide();
+  $(".metersButtonDiv").hide();
+  $(".feetButtonDiv").hide();
+
+  $("#start_trials").hide()
+  $(".startTrialsButtonDiv").hide();
+
+
+  $("#Instructions2").hide();
+  $("#FinalInstructions").hide()
+
 
   $("#startingInstructions").append( //have to append here instead of setting in html because variables are included
-    "<p>Thank you for your participation in this experiment. Please read the instructions very carefully.</p>"
-    + "<p> The experiment will be broken up into " + totalBlocks + " blocks of trials, each taking roughly 8 minutes. Each trial in the experiment will be run as follows:</p>"
-    + "<p>1. A fixation cross (+) will appear in the middle of the screen. <strong>Please try to keep your eyes on this fixation cross throughout the experiment.</strong></p>"
-    + "<p>2. A ring of 4 objects will then appear around the fixation.</p>"
-    + "<p>3. After a moment, one target grating (with either horizontal or vertical oriented lines) and several other distractors with diagonally oriented lines will be overlaid on the objects.</p>"
-    + "<p>4. The target grating will either be vertical or horizontal. Your task is to indicate the orientation of the target grating. When the grating is horizontal, press the \"c\" key on your keyboard. When the grating is vertical, press the \"m\" key on your keyboard.</p>"
-    + "<br><p>When you are ready to begin the practice section, click the button below.</p>");
+    "<h1>Thank you for accepting this HIT!</h1>"
+    + "<p>In this Human Interaction Task (HIT), you are asked to make judgments about everyday objects and scenes. This psychology task takes about 20 minutes and you will be compensated $2.50 (roughly $7.50/hour).</p>"
+    + "<p>This research is conducted by the Brain and Navigation Laboratory at the George Washington University (PI: Dr. John Philbeck). You may contact Dr. Philbeck at bnavlab2@gmail.com, or the George Washington University Institutional Review Board at (202) 994-2715.</p>"
+    + "<p>This task can only be completed once. If you have already completed this task before the system will not allow you to run again. If this looks familiar please return the HIT so someone else can participate. </p>"
+    + "<p>Otherwise, please click 'NEXT' to reveal further instructions and an informed consent agreement.</p>"
+    );
 
   document.getElementById("subjID").value = subjID;
   document.getElementById("startDate").value = startDate;
@@ -103,12 +105,385 @@ $(document).ready(function(){
 
 function preloadStimuli(){
   // loads all stimuli into document under hidden div so there is no lag when calling them
+  for (idx in practice_seq){ // iterates through indeces of elements in sequence 
+    var trial = practice_seq[idx]
 
-  for (var catNum=0; catNum<cats.length; catNum++){
-    for (var objInCat=0; objInCat<objsPerCat[catNum].length; objInCat++){
-      var img = document.createElement("img");
-      img.src = "stimuli/" + objsPerCat[catNum][objInCat];
-      document.getElementById("preload").appendChild(img);
-    }
+    var stimulus_path = trial.image_path_target
+    var scene = document.createElement("scene");
+    scene.src = stimulus_path;
+    document.getElementById("preload").appendChild(scene)
+
+    var mask_path = trial.mask_path
+    var mask = document.createElement("mask");
+    mask.src = mask_path;
+    document.getElementById("preload_masks").appendChild(mask)
+
+
+  }
+
+
+}
+
+// INSTRUCTIONS - Before Practice // 
+
+
+function showConsent(){
+  $(".buttonDivPg2").show();
+  $(".buttonDivPg1").hide();
+  $(".buttonDivPg3").hide();
+  $(".buttonDivPg4").hide();
+  $(".metersButtonDiv").hide();
+  $(".feetButtonDiv").hide();
+
+
+  $("#startingInstructions").hide();
+  $("#Instructions2").hide();
+
+  $("#FinalInstructions").hide()
+
+
+  $("#getConsent").append( 
+    "<h1>Title of Study: The Visual Determinants of Size in Natural Scenes </h1>"
+    + "<br>IRB #: 04168<br/>"
+    + "<br>Version Date: 7/09/20<br/>"
+
+    + "<p>The purpose of this study is to investigate how people determine the size of objects in pictures of natural scenes.</p>"
+    + "<p>If you choose to take part in this study, you will participate in a research activity that involves viewing a series of pictures and answering questions about them. For example, for each picture, you might be asked about the sizes or spatial relationships of objects in the scene, or what objects were present in the scene. The total amount of time you will spend in connection with this study is about 20 minutes, and you will receive $2.50 as compensation for your participation. You may refuse to answer any of the questions and you may stop your participation in this study at any time.</p>"
+    + "<p>Possible risks or discomforts you could experience during this study include: boredom or loss of confidentiality (for example, depending on where you are, someone might see you taking part in the study). </p>"
+    + "<p>You will not benefit directly from your participation in the study. The benefit to science and humankind that might result from this study is: a clearer understanding about how people perceive the size and spatial relationships among objects in natural scenes.</p>"
+    + " <p> Every effort will be made to keep your information confidential, however, this cannot be guaranteed. We will not receive any information about you other than your responses to the study questions. If results of this research study are reported in journals or at scientific meetings, the people who participated in this study will not be named or identified. <p/>"
+    + "<p> The Office of Human Research of George Washington University, at telephone number (202) 994-2715, can provide further information about your rights as a research participant.<p/>"
+    + "<p> Your willingness to participate in this research study is implied if you proceed.<p/>"
+    + "<p> Please click 'AGREE' if you agree to participate:<p/>"
+    );
+}
+
+function nextInstructions(){
+  $("#getConsent").hide();
+  $("#Instructions2").show();
+  $("#FinalInstructions").hide()
+
+  $(".buttonDivPg2").hide();
+  $(".buttonDivPg1").hide();
+  $(".buttonDivPg3").show();
+  $(".buttonDivPg4").hide();
+  $(".metersButtonDiv").hide();
+  $(".feetButtonDiv").hide();
+}
+
+function finalInstructions(){
+  $("#getConsent").hide();
+  $("#Instructions2").hide();
+  $("#FinalInstructions").show()
+
+  $(".buttonDivPg2").hide();
+  $(".buttonDivPg1").hide();
+  $(".buttonDivPg3").hide();
+  $(".metersButtonDiv").hide();
+  $(".feetButtonDiv").hide();
+  $(".buttonDivPg4").show()
+
+  $("#FinalInstructions").append(
+    "<h1> Instructions </h1>"
+    + "<p>A fixation cross will appear in the center of the screen - focus on this cross. The target will then appear for a brief amount of time, so make sure you are watching closely as to not miss the target. Then, the scene and target will disappear, and you will see an image of colored squares. Once this image disappears you will be prompted to enter your distance judgment. Be sure to give your estimate as a single number, rather than a range of possible values. You can use decimals to indicate fractions. After entering your distance judgment, click the 'NEXT' button. As soon as you click this button, the fixation cross will be displayed.</p>"
+    + "<p>We ask that you pay close attention on each trial so you detect all of the targets, but occasionally you may accidentally miss one. If you do, please enter '0' in the response box. You will not be penalized for missing a target, we'd just like to know so we can factor this into our analysis later.</p>"
+    + "<p> You will see 256 images, and the experiment will take approximately 20 minutes. The experiment will begin with three practice trials. If you are ready to begin, please click 'BEGIN' below.</p>"
+    )
+}
+
+function getUnits(){
+  $("#getConsent").hide();
+  $("#Instructions2").hide();
+  $("#FinalInstructions").hide();
+  $("#getUnits").show()
+
+  $(".buttonDivPg2").hide();
+  $(".buttonDivPg1").hide();
+  $(".buttonDivPg3").hide();
+  $(".buttonDivPg4").hide();
+  $(".metersButtonDiv").show()
+  $(".feetButtonDiv").show()
+
+  $("#getUnits").append(
+    "<p> This study will ask you to estimate the distance of objects. What unit of measurement would you like to use?<p/>"
+    )
+}
+
+function recordUnitsMeters(){
+  pref = true // units have been chosen 
+  unit = "meters"
+  console.log(unit)
+
+  $("#getUnits").hide()
+  $(".metersButtonDiv").hide()
+  $(".feetButtonDiv").hide()
+
+  $(".startPracticeButtonDiv").show()
+
+}
+
+function recordUnitsFeet(){
+  pref = true // units have been chosen 
+  unit = "feet"
+  console.log(unit)
+
+  $("#getUnits").hide()
+  $(".metersButtonDiv").hide()
+  $(".feetButtonDiv").hide()
+  $(".startPracticeButtonDiv").show()
+
+}
+
+function startPractice(){
+  // not recording responses from practice trials 
+  $(".startPracticeButtonDiv").hide()
+
+  if (practice_trial > 2){
+    practiced = true
+    $("#start_trials").show()
+    $(".startTrialsButtonDiv").show();
+
+  }
+
+  else{
+    scene_duration = getTrialDuration();
+    var fixation = showFixation();
+    // weird timing note... seems like the time accumulates so it is not actual duration but relative time? 
+    // so mask the scene still shows up for the amount of scene_duration, but you have to account for the time already spent
+    var scene = setTimeout(function(){showScene();}, fixation_time); // the time here is how long it takes to show up NOT time on the screen
+    var mask = setTimeout(function(){showMask();}, fixation_time + scene_duration); // extra time added for testing purposes
+    var response = setTimeout(function(){getResponse();}, fixation_time + scene_duration + mask_time)
+
   }
 }
+
+function runTrial(){ // Double check that the depth estimate is being recorded for the right trial params
+
+  $(".startPracticeButtonDiv").hide()
+  $("#start_trials").hide()
+  $(".startTrialsButtonDiv").hide();
+
+
+  if (start_recording == true){ // prevents the last practice trial from being recorded 
+    var trial_params = getTrialParams();
+
+    var stimulus = trial_params[0]
+    var duration = trial_params[1]
+    var actual_depth = trial_params[2]
+
+    depth_estimate = document.getElementById("numb").value;
+
+    console.log(stimulus, duration, actual_depth, depth_estimate)
+
+    //saveTrialData();
+
+    counter ++;
+
+  }
+
+  if (trial > num_trials){ // TEMPORARY: should be 255 for full trial structure 
+
+    $("#lastBlockInstructions").append(
+      "<p style='text-align:center'>Congratulations, you have finished the experiment. Thank you for your participation!</p>"
+      +"<p style='text-align:center'>Click the button below to reveal your unique completion code.</p>")
+    $("#lastBlockInstructions").show();
+    $("#revealCodeButton").show();
+    console.log("FINISHED")
+  }
+
+  else{
+
+    start_recording = true; // start recording because practice trials are done 
+    scene_duration = getTrialDuration();
+    var fixation = showFixation();
+    // weird timing note... seems like the time accumulates so it is not actual duration but relative time? 
+    // so mask the scene still shows up for the amount of scene_duration, but you have to account for the time already spent
+    var scene = setTimeout(function(){showScene();}, fixation_time); // the time here is how long it takes to show up NOT time on the screen
+    var mask = setTimeout(function(){showMask();}, fixation_time + scene_duration); // extra time added for testing purposes
+    var response = setTimeout(function(){getResponse();}, fixation_time + scene_duration + mask_time)
+
+
+  }
+
+
+
+}
+
+function showFixation(){
+
+  f_path = "fixation.jpg"
+  $("#fixation_image").attr("src", f_path)
+  $(document).ready(function(){
+    $(".fixationDiv").show();
+  })
+}
+
+function showScene(){
+  if (practiced == false){
+    var s_path = practice_seq[practice_trial].image_path_target
+    var s_duration = practice_seq[practice_trial].duration 
+    var actual_depth = stim_seq[trial].depth
+
+  }
+  else{ // TEMP SIM SEQ BEING USED - need to use actual sequence  
+    var s_path = stim_seq[trial].image_path_target
+    var s_duration = stim_seq[trial].duration 
+    var actual_depth = stim_seq[trial].depth
+  }
+
+  $("#scene_image").attr("src", s_path);
+  $(document).ready(function(){
+    $(".fixationDiv").hide();
+    $(".maskDiv").hide();
+    $(".sceneDiv").show();
+  })
+
+}
+
+function getTrialDuration(){
+  if (practiced == false){
+    var stim_duration = practice_seq[practice_trial].duration
+  }
+  else{ // TEMP SIM SEQ BEING USED - need to use actual sequence 
+    var stim_duration = stim_seq[trial].duration
+  }
+  return stim_duration
+}
+
+function showMask(){
+  if (practiced == false){
+    var m_path = practice_seq[practice_trial].mask_path
+  }
+  else{ // TEMP SIM SEQ BEING USED - need to use actual sequence 
+    var m_path = stim_seq[trial].mask_path
+  }
+
+  $("#mask_image").attr("src", m_path);
+  $(document).ready(function(){
+    $(".fixationDiv").hide();
+    $(".sceneDiv").hide();
+    $(".maskDiv").show();
+  })
+
+}
+
+// https://www.w3schools.com/js/js_validation.asp
+// depth estimate is validated in html response div
+
+function getResponse(){
+
+  $(document).ready(function(){
+    $(".fixationDiv").hide();
+    $(".sceneDiv").hide();
+    $(".maskDiv").hide();
+    $(".responseDiv").show();
+
+
+  })
+  // would be better to have the selected unit in the prompt - currently copping out by including prompt in html
+  // $("#response").append("How far away is the target, in " + unit + "?")
+
+}
+
+function getTrialParams(){
+  var stimulus = stim_seq[counter].image_path_target
+  var duration = stim_seq[counter].duration 
+  var actual_depth = stim_seq[counter].depth
+
+
+  return [stimulus, duration, actual_depth];
+
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+function endExperiment(){
+  // gives participant their unique code and saves data to server --> this page should look identical to redirect html (revealCode.html)
+  $("#lastBlockInstructions").append("<br><p style='text-align:center'><strong>Your unique completion code is: </strong>" +subjID+"</p>");
+  $("#revealCodeButton").hide();
+  //saveAllData();
+}
+
+// ---------------------
+// saving data functions
+// ---------------------
+
+function saveTrialData(){
+  // at the end of each trial, appends values to data dictionary
+
+  // global variables --> will be repetitive, same value for every row (each row will represent one trial)
+  thisData["subjID"].push(subjID);
+  thisData["experimentName"].push("DepthScenes");
+  thisData["versionName"].push("duration_manipulation");
+  thisData["sequenceName"].push(sequenceName)
+  thisData["windowWidth"].push($(window).width());
+  thisData["windowHeight"].push($(window).height());
+  thisData["screenWidth"].push(screen.width);
+  thisData["screenHeight"].push(screen.height);
+  thisData["startDate"].push(startDate);
+  thisData["startTime"].push(startTime);
+  thisData["unitSelection"].push(unit)
+
+  // trial-by-trial variables, changes each time this function is called
+  thisData["stimulus"].push()
+  thisData["duration"].push()
+  thisData["actual_depth"].push()
+  thisData["depth_estimate"].push()
+
+
+}
+
+function saveAllData() {
+  // saves last pieces of data that needed to be collected at the end, and calls sendToServer function
+
+  // add experimentTime and totalTime to data dictionary
+  var experimentTime = (endExpTime - startExpTime);
+  var totalTime = ((new Date()) - start);
+  thisData["experimentTime"]=Array(trialNum).fill(experimentTime);
+  thisData["totalTime"]=Array(trialNum).fill(totalTime);
+
+  // change values for input divs to pass to php
+  $("#experimentData").val(JSON.stringify(thisData));
+  $("#completedTrialsNum").val(trial); //how many trials this participant completed
+
+  sendToServer();
+}
+
+function sendToServer() {
+  // send the data to the server as string (which will be parsed IN php)
+
+  $.ajax({ //same as $.post, but allows for more options to be specified
+    headers:{"Access-Control-Allow-Origin": "*", "Content-Type": "text/csv"}, //headers for request that allow for cross-origin resource sharing (CORS)
+    type: "POST", //post instead of get because data is being sent to the server
+    url: $("#saveData").attr("action"), //url to php
+    data: $("#experimentData").val(), //not sure why specified here, since we are using the data from the input variable, but oh well
+
+    // if it works OR fails, submit the form
+    success: function(){
+      document.forms[0].submit();
+    },
+    error: function(){
+      document.forms[0].submit();
+    }
+  });
+}
+
+// ----------------------
+// other random functions
+// ----------------------
+
+function shuffle(o){
+    for(var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+    return o;
+}
+
+function getRandomInt(max) {
+  return Math.floor(Math.random() * Math.floor(max));
+}
+
+function randomIntFromInterval(min, max) { // min and max included 
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
+

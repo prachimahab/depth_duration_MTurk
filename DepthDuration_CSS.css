@@ -1,95 +1,245 @@
-
 body {
-    padding:0px;
-    margin: 0px;
-    background-color: white;
-    color: black;
-    font-weight: 300; 
-    font-size: 13pt;
+  font-size: 14pt;
 }
 
-
-/* text styling */
-strong {
-  font-weight: 600;         
+#submitButton {
+  text-align: center;
+  margin: 0 auto;
+  display: none;
 }
 
-.warm {
-  color: steelblue;
+.preload {
+  display: none;
+}
+
+.preload_masks {
+  display: none;
+}
+
+.instructions {
+  padding-top: 20px;
+  padding-left: 200px;
+  padding-right: 200px;
+  margin: 0 auto;
+  display: none;
   text-align: justify;
 }
 
-.cool {
-  color: #ccccff;
+#startingInstructions {
+  display: block;
 }
 
-h1 {
-  margin-top: 0px;
+#getConsent {
+  display: block;
 }
 
-
-/* these are all the same for now, but easy to modify individually */
-#container-not-an-ad, #container-error, #container-exp, #container-consent, #container-instructions, #container-questionnaire {
-    background: white;
-    margin: 30px;
+#Instructions2{
+  display:block;
 }
 
-/* ad.html  - the ad that people view first */
-#adlogo {
-    width: 140px;
-    padding: 2px;
-    border: 1px solid #ccc;
-    margin-right: 1em;
+#FinalInstructions{
+  display:block;
 }
 
-/* consent.html - the consent form */
-#consent {
+#getUnits{
+  display: block;
+}
+
+.buttonDiv {
+  width: 100px;
+  text-align: center;
+  border: 4px outset black;
+  background:cadetblue;
+  padding: 5px;
   margin: 0 auto;
-  margin-top: 0;
-  width: 800px;
-  font-size: 100%;
+  color: white;
+  display: none;
 }
 
-.legal {
+.buttonDivPg1{
+  width: 100px;
+  text-align: center;
+  border: 4px outset black;
+  background:cadetblue;
+  padding: 5px;
+  margin: 0 auto;
+  color: white;
+  display: none;
+}
+
+.buttonDivPg2{
+  width: 100px;
+  text-align: center;
+  border: 4px outset black;
+  background:cadetblue;
+  padding: 5px;
+  margin: 0 auto;
+  color: white;
+  display: none;
+}
+
+.buttonDivPg3{
+  width: 100px;
+  text-align: center;
+  border: 4px outset black;
+  background:cadetblue;
+  padding: 5px;
+  margin: 0 auto;
+  color: white;
+  display: none;
+}
+
+.buttonDivPg4{
+  width: 100px;
+  text-align: center;
+  border: 4px outset black;
+  background:cadetblue;
+  padding: 5px;
+  margin: 0 auto;
+  color: white;
+  display: none;
+}
+
+.metersButtonDiv{
+  width: 100px;
+  text-align: center;
+  border: 1px outset black;
+  background:azure;
+  padding: 5px;
+  margin: 0 auto;
+  color: white;
+  display: none;
+}
+
+.feetButtonDiv{
+  width: 100px;
+  text-align: center;
+  border: 1px outset black;
+  background:azure;
+  padding: 5px;
+  margin: 0 auto;
+  color: white;
+  display: none;
+  float: ;
+}
+
+.startPracticeButtonDiv{
+  width: 100px;
+  text-align: center;
+  border: 4px outset black;
+  background:cadetblue;
+  padding: 5px;
+  margin: 0 auto;
+  color: white;
+  display: none;
+}
+
+.startTrialsButtonDiv{
+  width: 100px;
+  text-align: center;
+  border: 4px outset black;
+  background:cadetblue;
+  padding: 5px;
+  margin: 0 auto;
+  color: white;
+  display: none; 
+}
+
+
+#startConsentButton {
+  display: block;
+}
+
+#Instructions2Button {
+  display: block;
+}
+
+#FinalInstructionsButton{
+  display: block;
+}
+
+#metersSelectedButton{
+  display: block;
+}
+
+#feetSelectedButton{
+  display: block;
+}
+
+
+#startTrialsButton{
+  display: block;
+}
+
+
+.trialDiv {
+  border: 2px solid gray;
+  padding: 20px;
+  width: 200px;
+  margin:0 auto;
+  display: none;
+}
+
+#experimentBox {
+  border: 2px solid black;
+  width: 900px;
+  height: 600px;
+  margin:0 auto;
+  display: none;
+  background-color: gray;
+  position: relative;
+}
+
+
+.fixationDiv{ 
+  display: none;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 20px;
+  padding-left: 200px;
+  padding-right: 200px;
+  width: 50%;
+}
+
+.sceneDiv{
+  display: none;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 20px;
+  padding-left: 200px;
+  padding-right: 200px;
+  width: 50%;
+
+}
+
+.maskDiv{ 
+  display: none;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 20px;
+  padding-left: 200px;
+  padding-right: 200px;
+  width: 50%;
+
+}
+
+.responseDiv{ 
+  display: none;
+  position: absolute;
+  top: 10%;
+  left: 45%;
+  margin-top: -50px;
+  margin-left: -50px;
+  width: 200;
+  height: 200;
+
+}
+
+.startTrialsDiv {
+  padding-top: 20px;
+  padding-left: 200px;
+  padding-right: 200px;
+  margin: 0 auto;
+  display: none;
   text-align: justify;
-  font-size: 11pt;
-  line-height: 1.1em;
-}
-
-#trial {
-  margin: 0 auto;
-  width: 800px;
-  text-align: center;
-}
-
-#query {
-  color: darkgray;
-}
-
-.question {
-  margin-bottom: 30px;
-}
-
-/* errors */
-#error img {
-  padding-right: 10px;
-  padding-top: 15px;
-}
-
-.m3 {
-  margin: 3px;
-}
-
-.nocursor {
-  cursor: none;
-}
-
-.consent-title {
-  text-align: center;
-  font-weight: bold;
-  text-decoration: underline;
-}
-
-.consent-header {
-  font-weight: bold;
 }
