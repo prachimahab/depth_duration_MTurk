@@ -19,6 +19,49 @@
 		
 		<!-- instructions -->
 		<div id="startingInstructions" class="instructions">
+			<div class="hidden">
+				<script type="text/javascript">
+				var seq_filepath = 'seq_sequence_AF.json'
+
+				var stim_seq = $.ajax({ // loads in stimulus sequence from server
+                				url: seq_filepath,
+                				method: 'GET',
+                				dataType: 'json',
+                				data: JSON.stringify(),
+                				success: function (data) {
+                    			stim_seq = data;
+                    			preload(practice_seq, stim_seq); // calls function to preload all scene images 
+                    			preloadMasks(practice_seq, stim_seq); // calls function to preload all mask images 
+                },
+            });
+				var images = new Array()
+				function preload(practice_seq, stim_seq) {
+					for (var i = 0; i < practice_seq.length; i++) { // loops through all trials in practice sequence
+					images[i] = new Image() // constructer that creates an empty image object
+					images[i].src = practice_seq[i].image_path_target // sets the image source for the object 
+					}
+
+					for (var i = 0; i < stim_seq.length; i++) { // loops through all experimental trials in sequence 
+					images[i] = new Image()
+					images[i].src = stim_seq[i].image_path_target
+					}
+				}
+
+				var masks = new Array()
+				function preloadMasks(practice_seq, stim_seq) {
+					for (var j = 0; j < practice_seq.length; j++) { // loops through all trials in practice sequence
+					masks[j] = new Image()
+					masks[j].src = practice_seq[j].mask_path
+					}
+
+					for (var j = 0; j < stim_seq.length; j++) { // loops through all experimental trials in sequence 
+					masks[j] = new Image()
+					masks[j].src = stim_seq[j].mask_path
+					}
+				}
+				
+				</script>
+			</div>
 		</div>
 
 		<div id ="getConsent" class="instructions">
@@ -41,7 +84,6 @@
 		<div id = "getUnits" class="instructions">
 		</div>
 
-		<!-- END OF EXPERIMENT -->
 
 		<div id="lastBlockInstructions" class="instructions"> 
 		</div>
@@ -93,6 +135,12 @@
 		<div id="preload_masks" class="preload_masks">
 		</div>
 
+		<div id="preloadExperiment" class="preloadExperiment">
+		</div>
+
+		<div id="preload_masksExperiment" class="preload_masksExperiment">
+		</div>
+
 		<!-- start experiment -->
 		<div id="start_trials" class="startTrialsDiv">
 			<p>You have completed the practice trials!</p> 
@@ -114,16 +162,24 @@
 			<img id= "mask_image" src="" width=750>
 		</div>
 
+		<div id="maskExp" class="maskDiv">
+			<img id= "mask_image" src="" width=750>
+		</div>
+
 		<!-- Scene (w/ target) -->
 		<div id="scene" class="sceneDiv">
 			<img id= "scene_image" src="" width=750>
 		</div>
 
+		<div id="sceneExp" class="sceneDiv">
+			<img id= "scene_image" src="" width=750>
+		</div>
+
 		<div id="response" class="responseDiv">
 			<h1> How far away is the target? </h1>
-			<input id="numb" autocomplete="off" onfocus="this.removeAttribute('numb');">
+			<input id="numb" autocomplete="off" onfocus="this.value=''" value="">
 
-			<button type="button" onfocus="this.value=''" value="" onclick="validateForm()">Submit</button>
+			<button type="button" onfocus="this.value=''" value="" onclick="validateForm();">Submit</button>
 			<p id="feedback"></p>
 			<script>
 				
@@ -134,7 +190,7 @@
 			 estimate = document.getElementById("numb").value;
 
 			  // If x is Not a Number or less than zero
-			  if (isNaN(estimate) || estimate < 0 ) {
+			  if (isNaN(estimate) || estimate < 0 || estimate.length == 0) {
 			    text = "Please enter a number greater than or equal to zero (decimals allowed)";
 			  } 
 			  else {
@@ -142,10 +198,13 @@
 			  	if (practiced == false){
 			  		practice_trial ++; 
 			  		startPractice();
+			  		document.getElementById("numb").value = ""
 			  	}
 			  	else{
 			  		trial ++;
 			  		runTrial();
+			  		document.getElementById("numb").value = ""
+
 			  	}
 			  	$(".responseDiv").hide()
 			  }

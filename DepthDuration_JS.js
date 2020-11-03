@@ -6,6 +6,7 @@
 var thisData = {
   "subjID":[],
   "experimentName":[],
+  "versionName": [],
   "sequenceName":[],
   "windowWidth":[],
   "windowHeight":[],
@@ -29,7 +30,7 @@ var startDate = start.getMonth() + "-" + start.getDate() + "-" + start.getFullYe
 var startTime = start.getHours() + "-" + start.getMinutes() + "-" + start.getSeconds();
 
 // initialize empty variables
-var endExpTime, startExpTime; 
+var stimulus, duration, actual_depth, depth_estimate, endExpTime, startExpTime; 
 
 // unit preference variables 
 var pref = false // unit preference has not been made
@@ -49,30 +50,40 @@ var counter = 0 // counter for logging
 
 
 // PARTIAL SEQUENCE FOR TESTING PURPOSES (needs to be changed for actual experiment)
-var sequenceName = "test_sequence" // ** Needs to be: ex. 'updated_data_sequence_A.json'
-var stim_seq = JSON.parse('[{"sequence": "sequence_AF", "image": "depth_duration_stimuli/003292_12", "duration": 500, "num": 1, "depth": 2.335, "image_path": "depth_duration_stimuli/003292_12/003292-original.jpg", "image_path_target": "depth_duration_stimuli/003292_12/003292_12-target.png", "mask_path": "masks/mask_156.jpg", "fixation_path": "fixation.jpg", "sampled": 0}, {"sequence": "sequence_AF", "image": "depth_duration_stimuli/001451_10", "duration": 750, "num": 2, "depth": 1.564, "image_path": "depth_duration_stimuli/001451_10/001451-original.jpg", "image_path_target": "depth_duration_stimuli/001451_10/001451_10-target.png", "mask_path": "masks/mask_84.jpg", "fixation_path": "fixation.jpg", "sampled": 0}, {"sequence": "sequence_AF", "image": "depth_duration_stimuli/001920_15", "duration": 250, "num": 3, "depth": 4.752, "image_path": "depth_duration_stimuli/001920_15/001920-original.jpg", "image_path_target": "depth_duration_stimuli/001920_15/001920_15-target.png", "mask_path": "masks/mask_55.jpg", "fixation_path": "fixation.jpg", "sampled": 0}, {"sequence": "sequence_AF", "image": "depth_duration_stimuli/002467_5", "duration": 1000, "num": 4, "depth": 4.742, "image_path": "depth_duration_stimuli/002467_5/002467-original.jpg", "image_path_target": "depth_duration_stimuli/002467_5/002467_5-target.png", "mask_path": "masks/mask_61.jpg", "fixation_path": "fixation.jpg", "sampled": 0}, {"sequence": "sequence_AF", "image": "depth_duration_stimuli/002279_12", "duration": 500, "num": 5, "depth": 1.636, "image_path": "depth_duration_stimuli/002279_12/002279-original.jpg", "image_path_target": "depth_duration_stimuli/002279_12/002279_12-target.png", "mask_path": "masks/mask_34.jpg", "fixation_path": "fixation.jpg", "sampled": 0}, {"sequence": "sequence_AF", "image": "depth_duration_stimuli/002538_10", "duration": 1000, "num": 6, "depth": 3.271, "image_path": "depth_duration_stimuli/002538_10/002538-original.jpg", "image_path_target": "depth_duration_stimuli/002538_10/002538_10-target.png", "mask_path": "masks/mask_127.jpg", "fixation_path": "fixation.jpg", "sampled": 0}]')
+var sequenceName = "sequence_AF" 
 // for full experiment num_trials = 255
-var num_trials = 5 // 6 images, but since indexing starts at zero this should be 5
+var num_trials = 29 // 6 images, but since indexing starts at zero this should be 5
 
 // solves problem of last practice variables being saved in the estimate variable and getting recorded 
 // set to true once trial has actually begun NOT in the beginning of the function because the practice trial is still saved in the estimate variable
 var start_recording = false 
 
-// THIS IS THE IDEAL METHOD: ERROR - Access to XMLHttpRequest at 'file:///Users/prachi/Documents/depth_duration/mturk_code/depth_duration_MTurk/updated_data_sequence_A.json' from origin 'null' has been blocked by CORS policy: Cross origin requests are only supported for protocol schemes: http, data, chrome, chrome-extension, https.
-// var seq_filepath = 'updated_data_sequence_A.json'
-// $.ajax ({ url: seq_filepath, method: "GET"}) 
-// .success(function (response) { 
-//    var json = $.parseJSON (response); 
-//    console.log(json)
-// });
-// OR: https://www.w3schools.com/js/js_json_parse.asp#:~:text=Example%20%2D%20Parsing%20JSON&text=Use%20the%20JavaScript%20function%20JSON,will%20get%20a%20syntax%20error.
+// Load in stimulus sequence (json file)
+
+
+var seq_filepath = 'seq_sequence_AF.json'
+
+var stim_seq = $.ajax({
+                url: seq_filepath,
+                method: 'GET',
+                dataType: 'json',
+                data: JSON.stringify(),
+                success: function (data) {
+                    stim_seq = data;
+                    // preloadStimuli(stim_seq);
+                },
+            });
+
 
 // ----------------
 // set-up functions
 // ----------------
 
 $(document).ready(function(){
-  // on open, add this text to the startingInstructions div and pre-load all stimuli
+
+
+
+  // on open, add text to the startingInstructions div and pre-load all stimuli
   $(".buttonDivPg2").hide();
   $(".buttonDivPg3").hide();
   $(".buttonDivPg4").hide();
@@ -87,7 +98,7 @@ $(document).ready(function(){
   $("#FinalInstructions").hide()
 
 
-  $("#startingInstructions").append( //have to append here instead of setting in html because variables are included
+  $("#startingInstructions").append( 
     "<h1>Thank you for accepting this HIT!</h1>"
     + "<p>In this Human Interaction Task (HIT), you are asked to make judgments about everyday objects and scenes. This psychology task takes about 20 minutes and you will be compensated $2.50 (roughly $7.50/hour).</p>"
     + "<p>This research is conducted by the Brain and Navigation Laboratory at the George Washington University (PI: Dr. John Philbeck). You may contact Dr. Philbeck at bnavlab2@gmail.com, or the George Washington University Institutional Review Board at (202) 994-2715.</p>"
@@ -99,30 +110,46 @@ $(document).ready(function(){
   document.getElementById("startDate").value = startDate;
   document.getElementById("startTime").value = startTime;
 
-  preloadStimuli();
-
 });
 
-function preloadStimuli(){
-  // loads all stimuli into document under hidden div so there is no lag when calling them
-  for (idx in practice_seq){ // iterates through indeces of elements in sequence 
-    var trial = practice_seq[idx]
+// NOTE: no longer preloading in JS file (did not work) --> wrote new function in HTML called under starting instructions 
+// NEED TO DELETE --> preload div, css related to preloading... etc. 
+// function preloadStimuli(stim_seq){
+//   // loads all stimuli into document under hidden div so there is no lag when calling them
+//   for (var idx=0; idx <practice_seq.length; idx++){ // iterates through indeces of elements in sequence 
+//     var trial_prac = practice_seq[idx] // gets trial parameters 
 
-    var stimulus_path = trial.image_path_target
-    var scene = document.createElement("scene");
-    scene.src = stimulus_path;
-    document.getElementById("preload").appendChild(scene)
+//     var stimulus_path = trial_prac.image_path_target // extract stimulus path
+//     var scene_prac = document.createElement("scene");
+//     scene_prac.src = stimulus_path;
+//     console.log(typeof scene_prac.src)
+//     document.getElementById("preload").appendChild(scene_prac);
 
-    var mask_path = trial.mask_path
-    var mask = document.createElement("mask");
-    mask.src = mask_path;
-    document.getElementById("preload_masks").appendChild(mask)
+//     var mask_path = trial_prac.mask_path
+//     var mask_prac = document.createElement("mask");
+//     mask_prac.src = mask_path;
+//     document.getElementById("preload_masks").appendChild(mask_prac);
+//   }
 
 
-  }
+//   for (var idx=0; idx <stim_seq.length; idx++){ // iterates through indeces of elements in sequence 
+//     var trial_exp = stim_seq[idx]
+
+//     var stimulus_path_exp = trial_exp.image_path_target
+//     //console.log(stimulus_path_exp)
+//     var scene_exp = document.createElement("sceneExp");
+//     scene_exp.src = stimulus_path_exp;
+//     document.getElementById("preloadExperiment").appendChild(scene_exp);
+
+//     var mask_path_exp = trial_exp.mask_path
+//     var mask_exp = document.createElement("maskExp");
+//     mask_exp.src = mask_path_exp;
+//     document.getElementById("preload_masksExperiment").appendChild(mask_exp);
+
+//   }
+// }
 
 
-}
 
 // INSTRUCTIONS - Before Practice // 
 
@@ -236,6 +263,7 @@ function recordUnitsFeet(){
 
 function startPractice(){
   // not recording responses from practice trials 
+
   $(".startPracticeButtonDiv").hide()
 
   if (practice_trial > 2){
@@ -253,11 +281,10 @@ function startPractice(){
     var scene = setTimeout(function(){showScene();}, fixation_time); // the time here is how long it takes to show up NOT time on the screen
     var mask = setTimeout(function(){showMask();}, fixation_time + scene_duration); // extra time added for testing purposes
     var response = setTimeout(function(){getResponse();}, fixation_time + scene_duration + mask_time)
-
   }
 }
 
-function runTrial(){ // Double check that the depth estimate is being recorded for the right trial params
+function runTrial(){ 
 
   $(".startPracticeButtonDiv").hide()
   $("#start_trials").hide()
@@ -267,21 +294,28 @@ function runTrial(){ // Double check that the depth estimate is being recorded f
   if (start_recording == true){ // prevents the last practice trial from being recorded 
     var trial_params = getTrialParams();
 
-    var stimulus = trial_params[0]
-    var duration = trial_params[1]
-    var actual_depth = trial_params[2]
+    stimulus = trial_params[0]
+    duration = trial_params[1]
+    actual_depth = trial_params[2]
 
     depth_estimate = document.getElementById("numb").value;
 
+
+
+    console.log(typeof stimulus)
+    console.log(typeof duration)
+    console.log(typeof actual_depth)
+    console.log(typeof depth_estimate)
+
     console.log(stimulus, duration, actual_depth, depth_estimate)
 
-    //saveTrialData();
+    saveTrialData();
 
     counter ++;
 
   }
 
-  if (trial > num_trials){ // TEMPORARY: should be 255 for full trial structure 
+  if (trial > num_trials){ 
 
     $("#lastBlockInstructions").append(
       "<p style='text-align:center'>Congratulations, you have finished the experiment. Thank you for your participation!</p>"
@@ -325,7 +359,7 @@ function showScene(){
     var actual_depth = stim_seq[trial].depth
 
   }
-  else{ // TEMP SIM SEQ BEING USED - need to use actual sequence  
+  else{ 
     var s_path = stim_seq[trial].image_path_target
     var s_duration = stim_seq[trial].duration 
     var actual_depth = stim_seq[trial].depth
@@ -344,7 +378,7 @@ function getTrialDuration(){
   if (practiced == false){
     var stim_duration = practice_seq[practice_trial].duration
   }
-  else{ // TEMP SIM SEQ BEING USED - need to use actual sequence 
+  else{ 
     var stim_duration = stim_seq[trial].duration
   }
   return stim_duration
@@ -354,7 +388,7 @@ function showMask(){
   if (practiced == false){
     var m_path = practice_seq[practice_trial].mask_path
   }
-  else{ // TEMP SIM SEQ BEING USED - need to use actual sequence 
+  else{ 
     var m_path = stim_seq[trial].mask_path
   }
 
@@ -390,7 +424,6 @@ function getTrialParams(){
   var duration = stim_seq[counter].duration 
   var actual_depth = stim_seq[counter].depth
 
-
   return [stimulus, duration, actual_depth];
 
 }
@@ -403,7 +436,7 @@ function endExperiment(){
   // gives participant their unique code and saves data to server --> this page should look identical to redirect html (revealCode.html)
   $("#lastBlockInstructions").append("<br><p style='text-align:center'><strong>Your unique completion code is: </strong>" +subjID+"</p>");
   $("#revealCodeButton").hide();
-  //saveAllData();
+  saveAllData();
 }
 
 // ---------------------
@@ -424,14 +457,15 @@ function saveTrialData(){
   thisData["screenHeight"].push(screen.height);
   thisData["startDate"].push(startDate);
   thisData["startTime"].push(startTime);
-  thisData["unitSelection"].push(unit)
+  thisData["unitSelection"].push(unit);
 
   // trial-by-trial variables, changes each time this function is called
-  thisData["stimulus"].push()
-  thisData["duration"].push()
-  thisData["actual_depth"].push()
-  thisData["depth_estimate"].push()
+  thisData["stimulus"].push(stimulus);
+  thisData["duration"].push(duration);
+  thisData["actual_depth"].push(actual_depth);
+  thisData["depth_estimate"].push(depth_estimate);
 
+  console.log(stimulus, "this data stimulus")
 
 }
 
@@ -441,14 +475,16 @@ function saveAllData() {
   // add experimentTime and totalTime to data dictionary
   var experimentTime = (endExpTime - startExpTime);
   var totalTime = ((new Date()) - start);
-  thisData["experimentTime"]=Array(trialNum).fill(experimentTime);
-  thisData["totalTime"]=Array(trialNum).fill(totalTime);
+  thisData["experimentTime"]=Array(trial).fill(experimentTime);
+  thisData["totalTime"]=Array(trial).fill(totalTime);
+
 
   // change values for input divs to pass to php
   $("#experimentData").val(JSON.stringify(thisData));
   $("#completedTrialsNum").val(trial); //how many trials this participant completed
 
   sendToServer();
+  console.log("save all data")
 }
 
 function sendToServer() {

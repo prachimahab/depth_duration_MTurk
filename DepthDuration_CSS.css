@@ -16,6 +16,14 @@ body {
   display: none;
 }
 
+.preloadExperiment {
+  display: none;
+}
+
+.preload_masksExperiment {
+  display: none;
+}
+
 .instructions {
   padding-top: 20px;
   padding-left: 200px;
