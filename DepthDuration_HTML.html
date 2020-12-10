@@ -21,42 +21,93 @@
 		<div id="startingInstructions" class="instructions">
 			<div class="hidden">
 				<script type="text/javascript">
-				var seq_filepath = 'seq_sequence_AF.json'
 
-				var stim_seq = $.ajax({ // loads in stimulus sequence from server
-                				url: seq_filepath,
-                				method: 'GET',
-                				dataType: 'json',
-                				data: JSON.stringify(),
-                				success: function (data) {
-                    			stim_seq = data;
-                    			preload(practice_seq, stim_seq); // calls function to preload all scene images 
-                    			preloadMasks(practice_seq, stim_seq); // calls function to preload all mask images 
-                },
-            });
+				// LOAD COUNTERBALANCING CSV and EXPERIMENT SEQUENCE JSON FILE 
+				var data = $.ajax({
+							  url: 'counterbalancing.csv',
+							  dataType: 'text',
+							}).done(successFunction);
+
+
+				function successFunction(data) { // converts counterbalancing csv to JS array
+					  var allRows = data.split(/\r?\n|\r/);
+					  // table is an array with each row appended, i.e. row 0 = table[0]
+					  var table = [];
+					  for (var singleRow = 0; singleRow < allRows.length; singleRow++) {
+
+						   var rowCells = allRows[singleRow].split(',');
+						    for (var rowCell = 0; rowCell < rowCells.length; rowCell++) {
+						    	if (rowCell == 0){
+						    		var table_row = []
+						    	}						    	
+						    	table_row.push(rowCells[rowCell]);
+						    }
+						    table.push(table_row);
+
+					}
+					findRow(table); // calls function to find row to be sampled 
+				}
+
+				function findRow(table){
+					var found = false;
+					for (var row = 1; row < table.length; row++){
+						var sampled = table[row][1];
+						if (found == false){
+							if (sampled == "0"){
+								var seq_filepath = table[row][0]; // selects sequence filepath that has not been sampled --> 0
+								var found = true;
+							}
+						}
+					}
+					var stim_seq = $.ajax({ // loads in stimulus sequence from server
+	                				url: seq_filepath,
+	                				method: 'GET',
+	                				dataType: 'json',
+	                				data: JSON.stringify(),
+	                				success: function (data) {
+	                    			stim_seq = data;
+	                    			preload(practice_seq, stim_seq); // calls function to preload all scene images 
+	                    			preloadMasks(practice_seq, stim_seq); // calls function to preload all mask images 
+	                				},
+            		});
+
+				}
+
+				//PRELOADING FUNCTIONS
 				var images = new Array()
+				var masks = new Array()
 				function preload(practice_seq, stim_seq) {
-					for (var i = 0; i < practice_seq.length; i++) { // loops through all trials in practice sequence
-					images[i] = new Image() // constructer that creates an empty image object
-					images[i].src = practice_seq[i].image_path_target // sets the image source for the object 
+					for (var h = 0; h < practice_seq.length; h++) { // loops through all trials in practice sequence
+					images[h] = new Image() // constructer that creates an empty image object
+					images[h].src = practice_seq[h].image_path_target // sets the image source for the object 
+
+					masks[h] = new Image()
+					masks[h].src = practice_seq[h].mask_path
+					// console.log(h, "h")
+					}
+
+					for (var j = 0; j < practice_seq.length; j++) { // loops through all trials in practice sequence
+					masks[j] = new Image()
+					masks[j].src = practice_seq[j].mask_path
+					// console.log(j, "j")
 					}
 
 					for (var i = 0; i < stim_seq.length; i++) { // loops through all experimental trials in sequence 
 					images[i] = new Image()
 					images[i].src = stim_seq[i].image_path_target
+					masks[i] = new Image()
+					masks[i].src = stim_seq[i].mask_path
+					// console.log(i, "i")
 					}
 				}
 
-				var masks = new Array()
+				
 				function preloadMasks(practice_seq, stim_seq) {
-					for (var j = 0; j < practice_seq.length; j++) { // loops through all trials in practice sequence
-					masks[j] = new Image()
-					masks[j].src = practice_seq[j].mask_path
-					}
 
-					for (var j = 0; j < stim_seq.length; j++) { // loops through all experimental trials in sequence 
-					masks[j] = new Image()
-					masks[j].src = stim_seq[j].mask_path
+					for (var k = 0; k < stim_seq.length; k++) { // loops through all experimental trials in sequence 
+					masks[k] = new Image()
+					masks[k].src = stim_seq[k].mask_path
+					// console.log(k, "k")
 					}
 				}
 				
@@ -75,7 +126,7 @@
 
 	        <p>The target will only appear in the vertical center of the image, directly in your line of view if you were standing in the middle of the scene.</p>
 
-			<img src="example.png" />
+			<img src="example.png" class="center"/>
 		</div>
 
 		<div id = "FinalInstructions" class="instructions">
@@ -101,10 +152,16 @@
 
 		<div id="FinalInstructionsButton" class="buttonDivPg3">
 			<a href="#" id="FinalInstructionsText" onclick="finalInstructions()">Next</a>
+
 		</div>
 
 		<div id="getUnitsButton" class = "buttonDivPg4">
-			<a href="#" id="getUnitsText" onclick="getUnits()">Begin</a>
+			<a href="#" id="getUnitsText" onclick="myFunction();getUnits()">Begin</a>
+			<script type="text/javascript">
+				function myFunction() {
+				  alert("Please make your browser window full screen"); // so that images are consistently centered
+				}
+			</script>
 		</div>
 
 		<div id="metersSelectedButton" class = "metersButtonDiv">
@@ -116,7 +173,9 @@
 		</div>
 
 		<div id="startPracticeButton" class = "startPracticeButtonDiv">
-			<a href="#" id="startPracticeText" onclick="startPractice()">Start Practice</a>
+			<a href="#" id="startPracticeText" onclick="startPractice();">Start Practice</a>
+
+
 		</div>
 
 		<div id="startTrialsButton" class = "startTrialsButtonDiv">
@@ -177,19 +236,31 @@
 
 		<div id="response" class="responseDiv">
 			<h1> How far away is the target? </h1>
-			<input id="numb" autocomplete="off" onfocus="this.value=''" value="">
+			<input id="numb" autocomplete="off" onfocus="this.value=''" value="" autofocus/>
 
 			<button type="button" onfocus="this.value=''" value="" onclick="validateForm();">Submit</button>
 			<p id="feedback"></p>
 			<script>
+			$("numb").focus();
+			var x = document.getElementById("numb").autofocus; // checks that cursor is in the form field automatically 
+			// console.log(x, "is it autofocused?")
+			
+			var input = document.getElementById("numb");
+			input.addEventListener("keyup", function(event) { // allows participant to press enter 
+			  if (event.keyCode === 13) {
+			   validateForm();
+			  }
+			});
+			</script>
+			<script>
 				
-			function validateForm() {
+			function validateForm() { // validates trial depth response 
 			  var estimate, text;
 
 			 // Get the value of the input field with id="numb"
 			 estimate = document.getElementById("numb").value;
 
-			  // If x is Not a Number or less than zero
+			  // If x is not a Number, less than zero, or no response was given
 			  if (isNaN(estimate) || estimate < 0 || estimate.length == 0) {
 			    text = "Please enter a number greater than or equal to zero (decimals allowed)";
 			  } 

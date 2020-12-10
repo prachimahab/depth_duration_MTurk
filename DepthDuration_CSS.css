@@ -35,6 +35,11 @@ body {
 
 #startingInstructions {
   display: block;
+  padding-top: 20px;
+  padding-left: 200px;
+  padding-right: 200px;
+  margin: 0 auto;
+  text-align: justify;
 }
 
 #getConsent {
@@ -43,6 +48,7 @@ body {
 
 #Instructions2{
   display:block;
+
 }
 
 #FinalInstructions{
@@ -188,50 +194,40 @@ body {
   display: none;
 }
 
-#experimentBox {
-  border: 2px solid black;
-  width: 900px;
-  height: 600px;
-  margin:0 auto;
-  display: none;
-  background-color: gray;
-  position: relative;
-}
 
-
-.fixationDiv{ 
-  display: none;
+.center {
+  display: block;
   margin-left: auto;
   margin-right: auto;
-  padding-top: 20px;
-  padding-left: 200px;
-  padding-right: 200px;
+  width: 100%;
+}
+
+.fixationDiv{ 
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
   width: 50%;
+  left:-85px
 }
 
 .sceneDiv{
-  display: none;
+  display: block;
   margin-left: auto;
   margin-right: auto;
-  padding-top: 20px;
-  padding-left: 200px;
-  padding-right: 200px;
   width: 50%;
+  left:-85px
 
 }
 
 .maskDiv{ 
-  display: none;
+  display: block;
   margin-left: auto;
   margin-right: auto;
-  padding-top: 20px;
-  padding-left: 200px;
-  padding-right: 200px;
   width: 50%;
-
+  left:-85px
 }
 
-.responseDiv{ 
+.responseDiv{
   display: none;
   position: absolute;
   top: 10%;

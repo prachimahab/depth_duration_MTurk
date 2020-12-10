@@ -1,5 +1,6 @@
 <?php
 	// set response headers that are required for cross-origin resource sharing (CORS) --> I got these from the internet so not sure what they do exactly
+	// Update: CORS issue was solved by editing httpd.conf file @ /etc/httpd/conf/httpd.conf in server
 	header("Access-Control-Allow-Origin:*");
 	header("Access-Control-Allow-Credentials:true");
 	header("Access-Control-Max-Age: 100000");
@@ -7,9 +8,10 @@
 	header("Access-Control-Allow-Methods: PUT, POST, GET, OPTIONS, DELETE");
 
 	// set variables, either explicitly or post variables from form inputs
-	$experimentName = "DepthScenes"; // basic paradigm with duration manipulation 
-	$versionName = "duration_manipulation";
-	$dataURL = "/var/www/html/{$experimentName}/{$versionName}/data"; //this needs to be the location on the SERVER, not on the IP address
+	$experimentName = "DepthDuration"; // basic paradigm with duration manipulation 
+	// $versionName = "duration_manipulation";
+	$folderName = "depth_duration_Mturk";
+	$dataURL = "/var/www/html/{$experimentName}/{$folderName}/data"; //this needs to be the location on the SERVER, not on the IP address
 	$startDate = $_POST["startDate"];
 	$startTime = $_POST["startTime"];
 	$subjID = $_POST["subjID"];

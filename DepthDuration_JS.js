@@ -2,24 +2,39 @@
 // initialize global variables
 // ---------------------------
 
+// Server configuration: This code requires the server to have CORS enabled (edit httpd.conf appropriately) 
+
 // set-up data object --> all key values will be the headers on the output csv
 var thisData = {
   "subjID":[],
   "experimentName":[],
   "versionName": [],
   "sequenceName":[],
+  "url":[],
+  "selected_row": [],
   "windowWidth":[],
   "windowHeight":[],
   "screenWidth":[],
   "screenHeight":[],
   "startDate":[],
   "startTime":[],
+  "trial": [],
   "stimulus":[],
   "duration": [],
   "actual_depth": [],
   "depth_estimate": [],
+  "trial_RT":[],
+  "log_sceneDuration": [],
   "unitSelection": []
 };
+
+// information flow: depth_duration_variables.csv --> url for participant --> counterbalancing csv indexed by url fragment --> sampled json path
+// depth_duration_variables.csv is uploaded when publishing a batch --> This contains the url for each participant 
+
+// Row of counterbalancing array to be sampled is stored in the url fragment (part after #)
+var url = window.location.href 
+var url_split = url.split("#")
+var url_num = url_split[url_split.length - 1]
 
 // set subject ID as a random 6 digit number
 var subjID = randomIntFromInterval(100000, 999999);
@@ -30,7 +45,7 @@ var startDate = start.getMonth() + "-" + start.getDate() + "-" + start.getFullYe
 var startTime = start.getHours() + "-" + start.getMinutes() + "-" + start.getSeconds();
 
 // initialize empty variables
-var stimulus, duration, actual_depth, depth_estimate, endExpTime, startExpTime; 
+var stimulus, duration, actual_depth, depth_estimate, endExpTime, startExpTime, RT, log_sceneDuration; 
 
 // unit preference variables 
 var pref = false // unit preference has not been made
@@ -49,30 +64,71 @@ var trial = 0 //counter that references the index of the stim_seq variable
 var counter = 0 // counter for logging 
 
 
-// PARTIAL SEQUENCE FOR TESTING PURPOSES (needs to be changed for actual experiment)
-var sequenceName = "sequence_AF" 
-// for full experiment num_trials = 255
-var num_trials = 29 // 6 images, but since indexing starts at zero this should be 5
+// 256 trials in a full experiment 
+var num_trials = 255 // since indexing starts at zero num_trial = actual total trials - 1
 
 // solves problem of last practice variables being saved in the estimate variable and getting recorded 
 // set to true once trial has actually begun NOT in the beginning of the function because the practice trial is still saved in the estimate variable
 var start_recording = false 
 
-// Load in stimulus sequence (json file)
+// reads in counterbalancing csv and calls function to get sequence filepath 
+var data = $.ajax({
+                url: 'counterbalancing.csv',
+                dataType: 'text',
+              }).done(successFunction);
 
 
-var seq_filepath = 'seq_sequence_AF.json'
+function successFunction(data) {
+  // reads in CSV and converts to JS array
+  var allRows = data.split(/\r?\n|\r/);
+  var table = [];
+  for (var singleRow = 0; singleRow < allRows.length; singleRow++) {
+    var rowCells = allRows[singleRow].split(',');
+    for (var rowCell = 0; rowCell < rowCells.length; rowCell++) {
+      if (rowCell == 0){
+        var table_row = []
+      }                 
+      table_row.push(rowCells[rowCell]);
+    }
+    table.push(table_row);
 
-var stim_seq = $.ajax({
-                url: seq_filepath,
-                method: 'GET',
-                dataType: 'json',
-                data: JSON.stringify(),
-                success: function (data) {
-                    stim_seq = data;
-                    // preloadStimuli(stim_seq);
-                },
-            });
+  }
+  counterbalancing_array = table
+
+  seq_filepath = counterbalancing_array[url_num][0]; // filepath is the first element of the row (passed in through URL)
+  selected_row = url_num; // log which row was selected 
+
+  
+  // // loops through all rows in table to find the earliest row that has not been sampled
+  // var found = false;
+  // for (var row = 1; row < table.length; row++){
+  //   var sampled = table[row][1];
+  //   if (found == false){
+  //     if (sampled == "0"){
+  //       seq_filepath = table[row][0]; // selects filepath that has not been sampled yet 
+  //       counterbalancing_array[row][1] = "1"
+  //       var found = true;
+  //       selected_row = row; // log which row was selected so CSV can be updated post-experiment (Sampled: 0 --> 1)
+  //     }
+  //   }
+
+  // }
+
+  // ajax request for selected JSON (seq_filepath)
+  stim_seq = $.ajax({ // loads in stimulus sequence from server
+                          url: seq_filepath,
+                          method: 'GET',
+                          dataType: 'json',
+                          data: JSON.stringify(),
+                          success: function (data) {
+                            stim_seq = data; 
+                            sequenceName = stim_seq[0]["sequence"] // get sequence name, which is pushed in saveTrialData
+                            preload(practice_seq, stim_seq); // calls function to preload all scene images 
+                            preloadMasks(practice_seq, stim_seq); // calls function to preload all mask images 
+                          },
+                });
+
+}
 
 
 // ----------------
@@ -81,9 +137,7 @@ var stim_seq = $.ajax({
 
 $(document).ready(function(){
 
-
-
-  // on open, add text to the startingInstructions div and pre-load all stimuli
+  // on open, add text to the startingInstructions div 
   $(".buttonDivPg2").hide();
   $(".buttonDivPg3").hide();
   $(".buttonDivPg4").hide();
@@ -100,11 +154,12 @@ $(document).ready(function(){
 
   $("#startingInstructions").append( 
     "<h1>Thank you for accepting this HIT!</h1>"
-    + "<p>In this Human Interaction Task (HIT), you are asked to make judgments about everyday objects and scenes. This psychology task takes about 20 minutes and you will be compensated $2.50 (roughly $7.50/hour).</p>"
+    + "<p>In this Human Intelligence Task (HIT), you are asked to make judgments about everyday objects and scenes. This psychology task takes about 20 minutes and you will be compensated $2.50 (roughly $7.50/hour).</p>"
     + "<p>This research is conducted by the Brain and Navigation Laboratory at the George Washington University (PI: Dr. John Philbeck). You may contact Dr. Philbeck at bnavlab2@gmail.com, or the George Washington University Institutional Review Board at (202) 994-2715.</p>"
     + "<p>This task can only be completed once. If you have already completed this task before the system will not allow you to run again. If this looks familiar please return the HIT so someone else can participate. </p>"
     + "<p>Otherwise, please click 'NEXT' to reveal further instructions and an informed consent agreement.</p>"
     );
+
 
   document.getElementById("subjID").value = subjID;
   document.getElementById("startDate").value = startDate;
@@ -112,46 +167,8 @@ $(document).ready(function(){
 
 });
 
-// NOTE: no longer preloading in JS file (did not work) --> wrote new function in HTML called under starting instructions 
-// NEED TO DELETE --> preload div, css related to preloading... etc. 
-// function preloadStimuli(stim_seq){
-//   // loads all stimuli into document under hidden div so there is no lag when calling them
-//   for (var idx=0; idx <practice_seq.length; idx++){ // iterates through indeces of elements in sequence 
-//     var trial_prac = practice_seq[idx] // gets trial parameters 
 
-//     var stimulus_path = trial_prac.image_path_target // extract stimulus path
-//     var scene_prac = document.createElement("scene");
-//     scene_prac.src = stimulus_path;
-//     console.log(typeof scene_prac.src)
-//     document.getElementById("preload").appendChild(scene_prac);
-
-//     var mask_path = trial_prac.mask_path
-//     var mask_prac = document.createElement("mask");
-//     mask_prac.src = mask_path;
-//     document.getElementById("preload_masks").appendChild(mask_prac);
-//   }
-
-
-//   for (var idx=0; idx <stim_seq.length; idx++){ // iterates through indeces of elements in sequence 
-//     var trial_exp = stim_seq[idx]
-
-//     var stimulus_path_exp = trial_exp.image_path_target
-//     //console.log(stimulus_path_exp)
-//     var scene_exp = document.createElement("sceneExp");
-//     scene_exp.src = stimulus_path_exp;
-//     document.getElementById("preloadExperiment").appendChild(scene_exp);
-
-//     var mask_path_exp = trial_exp.mask_path
-//     var mask_exp = document.createElement("maskExp");
-//     mask_exp.src = mask_path_exp;
-//     document.getElementById("preload_masksExperiment").appendChild(mask_exp);
-
-//   }
-// }
-
-
-
-// INSTRUCTIONS - Before Practice // 
+// INSTRUCTIONS & CONSENT - Before Practice // 
 
 
 function showConsent(){
@@ -161,6 +178,7 @@ function showConsent(){
   $(".buttonDivPg4").hide();
   $(".metersButtonDiv").hide();
   $(".feetButtonDiv").hide();
+
 
 
   $("#startingInstructions").hide();
@@ -181,7 +199,7 @@ function showConsent(){
     + " <p> Every effort will be made to keep your information confidential, however, this cannot be guaranteed. We will not receive any information about you other than your responses to the study questions. If results of this research study are reported in journals or at scientific meetings, the people who participated in this study will not be named or identified. <p/>"
     + "<p> The Office of Human Research of George Washington University, at telephone number (202) 994-2715, can provide further information about your rights as a research participant.<p/>"
     + "<p> Your willingness to participate in this research study is implied if you proceed.<p/>"
-    + "<p> Please click 'AGREE' if you agree to participate:<p/>"
+    + "<p> Please click 'AGREE' if you have read the consent form and agree to participate. If you do not consent to participate, close this window.<p/>"
     );
 }
 
@@ -276,10 +294,10 @@ function startPractice(){
   else{
     scene_duration = getTrialDuration();
     var fixation = showFixation();
-    // weird timing note... seems like the time accumulates so it is not actual duration but relative time? 
-    // so mask the scene still shows up for the amount of scene_duration, but you have to account for the time already spent
+    // Timing note: time accumulates so it is not actual duration but relative time
+    // have to account for the time already spent
     var scene = setTimeout(function(){showScene();}, fixation_time); // the time here is how long it takes to show up NOT time on the screen
-    var mask = setTimeout(function(){showMask();}, fixation_time + scene_duration); // extra time added for testing purposes
+    var mask = setTimeout(function(){showMask();}, fixation_time + scene_duration); 
     var response = setTimeout(function(){getResponse();}, fixation_time + scene_duration + mask_time)
   }
 }
@@ -300,14 +318,8 @@ function runTrial(){
 
     depth_estimate = document.getElementById("numb").value;
 
-
-
-    console.log(typeof stimulus)
-    console.log(typeof duration)
-    console.log(typeof actual_depth)
-    console.log(typeof depth_estimate)
-
-    console.log(stimulus, duration, actual_depth, depth_estimate)
+    endTrialTime = new Date; // time at which response has been given for past trial
+    RT = endTrialTime - startTrialTime;
 
     saveTrialData();
 
@@ -315,14 +327,18 @@ function runTrial(){
 
   }
 
+  if (trial == 0){
+    startExpTime = new Date; // get start time of first trial to calculate total experiment time
+  }
+
   if (trial > num_trials){ 
+    endExpTime = new Date; //get time of end of last block to calculate total experiment time
 
     $("#lastBlockInstructions").append(
       "<p style='text-align:center'>Congratulations, you have finished the experiment. Thank you for your participation!</p>"
       +"<p style='text-align:center'>Click the button below to reveal your unique completion code.</p>")
     $("#lastBlockInstructions").show();
     $("#revealCodeButton").show();
-    console.log("FINISHED")
   }
 
   else{
@@ -330,16 +346,12 @@ function runTrial(){
     start_recording = true; // start recording because practice trials are done 
     scene_duration = getTrialDuration();
     var fixation = showFixation();
-    // weird timing note... seems like the time accumulates so it is not actual duration but relative time? 
-    // so mask the scene still shows up for the amount of scene_duration, but you have to account for the time already spent
+    // Timing note: time accumulates so it is not actual duration but relative time
+    // have to account for the time already spent
     var scene = setTimeout(function(){showScene();}, fixation_time); // the time here is how long it takes to show up NOT time on the screen
-    var mask = setTimeout(function(){showMask();}, fixation_time + scene_duration); // extra time added for testing purposes
+    var mask = setTimeout(function(){showMask();}, fixation_time + scene_duration); 
     var response = setTimeout(function(){getResponse();}, fixation_time + scene_duration + mask_time)
-
-
   }
-
-
 
 }
 
@@ -347,9 +359,11 @@ function showFixation(){
 
   f_path = "fixation.jpg"
   $("#fixation_image").attr("src", f_path)
+
   $(document).ready(function(){
     $(".fixationDiv").show();
   })
+
 }
 
 function showScene(){
@@ -360,11 +374,14 @@ function showScene(){
 
   }
   else{ 
+    startTrialTime = new Date; // time at which the scene is presented for a given trial 
+
     var s_path = stim_seq[trial].image_path_target
     var s_duration = stim_seq[trial].duration 
     var actual_depth = stim_seq[trial].depth
   }
 
+  startSceneTimeLog = new Date; // time at which scene is presented 
   $("#scene_image").attr("src", s_path);
   $(document).ready(function(){
     $(".fixationDiv").hide();
@@ -374,7 +391,7 @@ function showScene(){
 
 }
 
-function getTrialDuration(){
+function getTrialDuration(){ // from sequence json
   if (practiced == false){
     var stim_duration = practice_seq[practice_trial].duration
   }
@@ -392,6 +409,8 @@ function showMask(){
     var m_path = stim_seq[trial].mask_path
   }
 
+  endSceneTimeLog = new Date;
+  log_sceneDuration = endSceneTimeLog - startSceneTimeLog;
   $("#mask_image").attr("src", m_path);
   $(document).ready(function(){
     $(".fixationDiv").hide();
@@ -414,12 +433,10 @@ function getResponse(){
 
 
   })
-  // would be better to have the selected unit in the prompt - currently copping out by including prompt in html
-  // $("#response").append("How far away is the target, in " + unit + "?")
 
 }
 
-function getTrialParams(){
+function getTrialParams(){ // returns trial parameters to be logged 
   var stimulus = stim_seq[counter].image_path_target
   var duration = stim_seq[counter].duration 
   var actual_depth = stim_seq[counter].depth
@@ -450,7 +467,9 @@ function saveTrialData(){
   thisData["subjID"].push(subjID);
   thisData["experimentName"].push("DepthScenes");
   thisData["versionName"].push("duration_manipulation");
-  thisData["sequenceName"].push(sequenceName)
+  thisData["sequenceName"].push(sequenceName);
+  thisData["url"].push(url);
+  thisData["selected_row"].push(selected_row);
   thisData["windowWidth"].push($(window).width());
   thisData["windowHeight"].push($(window).height());
   thisData["screenWidth"].push(screen.width);
@@ -460,12 +479,13 @@ function saveTrialData(){
   thisData["unitSelection"].push(unit);
 
   // trial-by-trial variables, changes each time this function is called
+  thisData["trial"].push(trial);
   thisData["stimulus"].push(stimulus);
   thisData["duration"].push(duration);
   thisData["actual_depth"].push(actual_depth);
   thisData["depth_estimate"].push(depth_estimate);
-
-  console.log(stimulus, "this data stimulus")
+  thisData["trial_RT"].push(RT);
+  thisData["log_sceneDuration"].push(log_sceneDuration);
 
 }
 
@@ -494,7 +514,7 @@ function sendToServer() {
     headers:{"Access-Control-Allow-Origin": "*", "Content-Type": "text/csv"}, //headers for request that allow for cross-origin resource sharing (CORS)
     type: "POST", //post instead of get because data is being sent to the server
     url: $("#saveData").attr("action"), //url to php
-    data: $("#experimentData").val(), //not sure why specified here, since we are using the data from the input variable, but oh well
+    data: $("#experimentData").val(),  
 
     // if it works OR fails, submit the form
     success: function(){
