@@ -9,11 +9,11 @@ The data will be collected online through Amazon's Mechanical Turk so the reposi
 - The main files for running the experiment are DepthDuration_CSS.css, DepthDuration_JS.js, and DepthDuration_HTML.html 
 - The data is logged and saved as a CSV on the server in saveFile.php
 - Participants receive an unique completion code via revealCode.html 
-- depthDuration_source.html is adapated source code provided by Amazon Mechanical Turk for providing instructions and setting the survey link 
+- depthDuration_source.html is adapted source code provided by Amazon Mechanical Turk for providing instructions and setting the survey link 
 - depth_duration_variables.csv contains the variables that are needed for depthDuration_source.html (e.g. survey link). This method allows experimenters to publish a batch of multiple HITs (Human Intelligence Task) on Mechanical Turk
 
 In order to maximize image variability across participants, unique trial sequences were made using SUN-RGBD images. All images in the dataset were taken with Kinectv2 sensors, so the “ground truth” distance of the targets was extracted from the depth array for each image in the SUN-RGBD dataset. The following files allow for a balanced design in terms of images, duration, and range of target distances. 
-- The folder V0_jsons contains the four possible trial structures for participants. Given that there is no image repeition, four unique trial sequences was the maximum number possible given dataset constraints. Each json file contains the duration, image path, and masking image path for each trial, for a total of 256 trials.
+- The folder V0_jsons contains the four possible trial structures for participants. Given that there is no image repetition, four unique trial sequences was the maximum number possible given dataset constraints. Each json file contains the duration, image path, and masking image path for each trial, for a total of 256 trials.
 - Participants were given a few practice trials to acclimate themselves to the experiment. The file practice_data.json reflects the trial structure for these trials.
 - Image files: example.png (sample scene from SUN-RGBD) & fixation.jpg (standard fixation image) 
 - counterbalancing.csv is a file that is referenced in DepthDuration_JS.js to select the correct trial sequence (JSON file) for a given HIT 
