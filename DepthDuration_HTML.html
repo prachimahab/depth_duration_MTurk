@@ -122,7 +122,7 @@
 			<h1>Instructions</h1>
 			<p>In the following experiment, you will be asked to look at pictures of everyday scenes and make distance judgments of objects in them.</p>
 		    
-		    <p>For each trial, you will see an image with a red, black, and white circle (the target) displayed over an object in the scene, like in the example below. You will imagine yourself standing in the scene and make a judgment of how far away the object directly underneath the target is from your toes. For example, in the image below, you would be judging how far away the brown stripe is from you, as if you were physically standing in the scene. </p>
+		    <p>For each trial, you will see an image with a red, black, and green circle (the target) displayed over an object in the scene, like in the example below. You will imagine yourself standing in the scene and make a judgment of how far away the object directly underneath the target is from your toes. For example, in the image below, you would be judging how far away the brown stripe is from you, as if you were physically standing in the scene. </p>
 
 	        <p>The target will only appear in the vertical center of the image, directly in your line of view if you were standing in the middle of the scene.</p>
 
@@ -179,8 +179,12 @@
 		</div>
 
 		<div id="startTrialsButton" class = "startTrialsButtonDiv">
-			<a href="#" id="startTrialsText" onclick="runTrial()">Start</a>
+			<a href="#" id="startTrialsText" onclick="runTrial();">Start</a>
 		</div>
+		<!-- button to continue trials after break post block -->
+		<div id="restartTrialsButton" class = "restartTrialsButtonDiv">
+			<a href="#" id="restartTrialsText" onclick="runTrial();">Continue Experiment</a>
+		</div>		
 
 		<div id="revealCodeButton" class="buttonDiv">
 			<a href="#" id="revealCodeText" type onclick="endExperiment()">Reveal Code</a>
@@ -205,6 +209,12 @@
 			<p>You have completed the practice trials!</p> 
 			<p>Click 'START' to continue to the experiment.</p>
 		</div>
+
+		<!-- Post-Block Break -->
+<!-- 		<div id="restart_trials" class="restartTrialsDiv">
+			<p>Feel free to take a brief break!</p> 
+			<p>Click 'Continue Experiment' to continue.</p>
+		</div> -->
 
 		<!-- end experiment -->
 		<div id="lastBlockInstructions" class="instructions">
@@ -274,12 +284,61 @@
 			  	else{
 			  		trial ++;
 			  		runTrial();
+
 			  		document.getElementById("numb").value = ""
 
 			  	}
 			  	$(".responseDiv").hide()
 			  }
 			  document.getElementById("feedback").innerHTML = text;
+			}
+			</script>
+		</div>
+
+
+		<div id="age" class="ageDiv">
+			<h1> Please report your age in years below. </h1>
+			<input id="age_numb" autocomplete="off" onfocus="this.value=''" value="" autofocus/>
+
+			<button type="button" onfocus="this.value=''" value="" onclick="age_validateForm();">Submit</button>
+			<p id="_feedback"></p>
+			<script>
+			$("age_numb").focus();
+			var x_age = document.getElementById("age_numb").autofocus; // checks that cursor is in the form field automatically 
+			// console.log(x, "is it autofocused?")
+			
+			var input_age = document.getElementById("age_numb");
+			input_age.addEventListener("keyup", function(event) { // allows participant to press enter 
+			  if (event.keyCode === 13) {
+			   age_validateForm();
+			  }
+			});
+			</script>
+			<script>
+				
+			function age_validateForm() { // validates trial depth response 
+			  var age_response, _text;
+
+			 // Get the value of the input_age field with id="age_numb"
+			 age_response = document.getElementById("age_numb").value;
+
+
+			  // If x is not a Number, less than zero, or no response was given
+			  if (isNaN(age_response) || age_response < 0 || age_response.length == 0) {
+			    _text = "Please enter a valid number";
+			  } 
+			  else {
+			  	lastInstructions();
+
+			  	_text=" "
+			   //  $("#lastBlockInstructions").append(
+			   //    "<p style='text-align:center'>Congratulations, you have finished the experiment. Thank you for your participation!</p>"
+			   //    +"<p style='text-align:center'>Click the button below to reveal your unique completion code.</p>")
+			   //  $("#lastBlockInstructions").show();
+			   //  $("#revealCodeButton").show();
+			  	// $("#age").hide()
+			  }
+			  document.getElementById("_feedback").innerHTML = _text;
 			}
 			</script>
 		</div>

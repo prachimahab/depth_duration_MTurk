@@ -45,7 +45,7 @@ var startDate = start.getMonth() + "-" + start.getDate() + "-" + start.getFullYe
 var startTime = start.getHours() + "-" + start.getMinutes() + "-" + start.getSeconds();
 
 // initialize empty variables
-var stimulus, duration, actual_depth, depth_estimate, endExpTime, startExpTime, RT, log_sceneDuration; 
+var stimulus, duration, actual_depth, depth_estimate, endExpTime, startExpTime, RT, log_sceneDuration, reported_age; 
 
 // unit preference variables 
 var pref = false // unit preference has not been made
@@ -64,12 +64,13 @@ var trial = 0 //counter that references the index of the stim_seq variable
 var counter = 0 // counter for logging 
 
 
-// 256 trials in a full experiment 
-var num_trials = 255 // since indexing starts at zero num_trial = actual total trials - 1
+// 192 trials in a full experiment 
+var num_trials = 5 // since indexing starts at zero num_trial = actual total trials - 1
 
 // solves problem of last practice variables being saved in the estimate variable and getting recorded 
 // set to true once trial has actually begun NOT in the beginning of the function because the practice trial is still saved in the estimate variable
 var start_recording = false 
+var age_recorded = false
 
 // reads in counterbalancing csv and calls function to get sequence filepath 
 var data = $.ajax({
@@ -149,7 +150,9 @@ $(document).ready(function(){
 
 
   $("#Instructions2").hide();
-  $("#FinalInstructions").hide()
+  $("#restart_trials").hide();
+  $("#restartTrialsButton").hide();
+  $("#FinalInstructions").hide();
 
 
   $("#startingInstructions").append( 
@@ -232,7 +235,8 @@ function finalInstructions(){
     "<h1> Instructions </h1>"
     + "<p>A fixation cross will appear in the center of the screen - focus on this cross. The target will then appear for a brief amount of time, so make sure you are watching closely as to not miss the target. Then, the scene and target will disappear, and you will see an image of colored squares. Once this image disappears you will be prompted to enter your distance judgment. Be sure to give your estimate as a single number, rather than a range of possible values. You can use decimals to indicate fractions. After entering your distance judgment, click the 'NEXT' button. As soon as you click this button, the fixation cross will be displayed.</p>"
     + "<p>We ask that you pay close attention on each trial so you detect all of the targets, but occasionally you may accidentally miss one. If you do, please enter '0' in the response box. You will not be penalized for missing a target, we'd just like to know so we can factor this into our analysis later.</p>"
-    + "<p> You will see 256 images, and the experiment will take approximately 20 minutes. The experiment will begin with three practice trials. If you are ready to begin, please click 'BEGIN' below.</p>"
+    + "<p> You will see 192 images, and the experiment will take approximately 20 minutes. </p>"
+    + "<p> The experiment will begin with three practice trials. If you are ready to begin, please click 'BEGIN' below. </p>"
     )
 }
 
@@ -308,6 +312,9 @@ function runTrial(){
   $("#start_trials").hide()
   $(".startTrialsButtonDiv").hide();
 
+  $("#restart_trials").hide();
+  $("#restartTrialsButton").hide();
+
 
   if (start_recording == true){ // prevents the last practice trial from being recorded 
     var trial_params = getTrialParams();
@@ -317,6 +324,7 @@ function runTrial(){
     actual_depth = trial_params[2]
 
     depth_estimate = document.getElementById("numb").value;
+    console.log(depth_estimate)
 
     endTrialTime = new Date; // time at which response has been given for past trial
     RT = endTrialTime - startTrialTime;
@@ -334,14 +342,12 @@ function runTrial(){
   if (trial > num_trials){ 
     endExpTime = new Date; //get time of end of last block to calculate total experiment time
 
-    $("#lastBlockInstructions").append(
-      "<p style='text-align:center'>Congratulations, you have finished the experiment. Thank you for your participation!</p>"
-      +"<p style='text-align:center'>Click the button below to reveal your unique completion code.</p>")
-    $("#lastBlockInstructions").show();
-    $("#revealCodeButton").show();
+    getAge();
+
   }
 
   else{
+    console.log(trial)
 
     start_recording = true; // start recording because practice trials are done 
     scene_duration = getTrialDuration();
@@ -351,9 +357,11 @@ function runTrial(){
     var scene = setTimeout(function(){showScene();}, fixation_time); // the time here is how long it takes to show up NOT time on the screen
     var mask = setTimeout(function(){showMask();}, fixation_time + scene_duration); 
     var response = setTimeout(function(){getResponse();}, fixation_time + scene_duration + mask_time)
+      
   }
-
 }
+
+
 
 function showFixation(){
 
@@ -436,6 +444,36 @@ function getResponse(){
 
 }
 
+// function giveBreak(){
+
+//   $(document).ready(function(){
+//     $(".fixationDiv").hide();
+//     $(".sceneDiv").hide();
+//     $(".maskDiv").hide();
+//     $(".responseDiv").hide();
+//     $("#restart_trials").show();
+//     $("#restartTrialsButton").show();
+//   })
+
+// }
+
+function getAge(){
+
+  $(document).ready(function(){
+    $(".fixationDiv").hide();
+    $(".sceneDiv").hide();
+    $(".maskDiv").hide();
+    $(".responseDiv").hide();
+    $("#restart_trials").hide();
+    $("#restartTrialsButton").hide();
+    $("#age").show();
+
+
+  })
+
+
+}
+
 function getTrialParams(){ // returns trial parameters to be logged 
   var stimulus = stim_seq[counter].image_path_target
   var duration = stim_seq[counter].duration 
@@ -445,15 +483,38 @@ function getTrialParams(){ // returns trial parameters to be logged
 
 }
 
+function lastInstructions(){ // AGE IS NOT GETTING RECORDED!
+  if (age_recorded == false){
+    reported_age = document.getElementById("age_numb").value;
+    saveTrialData();
+    age_recorded = true
+  }
+
+  if (age_recorded == true){
+    $("#age").hide() 
+    $("#lastBlockInstructions").append(
+      "<p style='text-align:center'>Congratulations, you have finished the experiment. Thank you for your participation!</p>"
+      +"<p style='text-align:center'>Click the button below to reveal your unique completion code.</p>")
+    $("#lastBlockInstructions").show();
+    $("#revealCodeButton").show();
+
+  }
+ 
+
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 function endExperiment(){
-  // gives participant their unique code and saves data to server --> this page should look identical to redirect html (revealCode.html)
-  $("#lastBlockInstructions").append("<br><p style='text-align:center'><strong>Your unique completion code is: </strong>" +subjID+"</p>");
-  $("#revealCodeButton").hide();
-  saveAllData();
+
+  if (age_recorded == true){
+    // gives participant their unique code and saves data to server --> this page should look identical to redirect html (revealCode.html)
+    $("#lastBlockInstructions").append("<br><p style='text-align:center'><strong>Your unique completion code is: </strong>" +subjID+"</p>");
+    $("#revealCodeButton").hide();
+    saveAllData();
+  }
 }
 
 // ---------------------
@@ -497,7 +558,9 @@ function saveAllData() {
   var totalTime = ((new Date()) - start);
   thisData["experimentTime"]=Array(trial).fill(experimentTime);
   thisData["totalTime"]=Array(trial).fill(totalTime);
-
+  var age = reported_age;
+  console.log('age', age)
+  thisData["age"] = Array(trial).fill(age);
 
   // change values for input divs to pass to php
   $("#experimentData").val(JSON.stringify(thisData));
@@ -542,4 +605,3 @@ function getRandomInt(max) {
 function randomIntFromInterval(min, max) { // min and max included 
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
-

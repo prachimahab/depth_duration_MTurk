@@ -159,6 +159,16 @@ body {
   display: none; 
 }
 
+.restartTrialsButtonDiv{
+  width: 100px;
+  text-align: center;
+  border: 4px outset black;
+  background:cadetblue;
+  padding: 5px;
+  margin: 0 auto;
+  color: white;
+  display: none; 
+}
 
 #startConsentButton {
   display: block;
@@ -185,6 +195,9 @@ body {
   display: block;
 }
 
+/*#restartTrialsButton{
+  display: block;
+}*/
 
 .trialDiv {
   border: 2px solid gray;
@@ -228,6 +241,19 @@ body {
 }
 
 .responseDiv{
+  display: none;
+  position: absolute;
+  top: 10%;
+  left: 45%;
+  margin-top: -50px;
+  margin-left: -50px;
+  width: 200;
+  height: 200;
+
+}
+
+
+.ageDiv{
   display: none;
   position: absolute;
   top: 10%;
