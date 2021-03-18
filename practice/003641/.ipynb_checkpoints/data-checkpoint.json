@@ -1,0 +1,17 @@
+{
+  "dbPath": "/Users/colinpirillo/Desktop/SUNRGBD/kv2/kinect2data/003641_2014-05-23_22-11-02_094959634447_rgbf000102-resize",
+  "imagePath": "/Users/colinpirillo/Desktop/SUNRGBD/kv2/kinect2data/003641_2014-05-23_22-11-02_094959634447_rgbf000102-resize/image/0000102.jpg",
+  "objects": [
+    {
+      "name": "wall",
+      "dbID": 2,
+      "crossing_points": [
+        {
+          "x": 364,
+          "y": 215.145584725537,
+          "depth": 3.072
+        }
+      ]
+    }
+  ]
+}
