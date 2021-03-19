@@ -1,0 +1,17 @@
+{
+    "dbPath": "/Users/prachi/Documents/depth_duration/kinect2data_subset/003086_2014-06-15_15-24-53_094959634447_rgbf000150-resize",
+    "imagePath": "/Users/prachi/Documents/depth_duration/kinect2data_subset/003086_2014-06-15_15-24-53_094959634447_rgbf000150-resize/image/0000150.jpg",
+    "objects": [
+        {
+            "name": "stove",
+            "dbID": 6,
+            "crossing_point": [
+                {
+                    "x": 364,
+                    "y": 229.50234741784038,
+                    "depth": 3.588
+                }
+            ]
+        }
+    ]
+}

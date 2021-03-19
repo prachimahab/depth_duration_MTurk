@@ -56,7 +56,7 @@ var fixation_time = 500
 var mask_time = 500 
 
 var practice_trial = 0 // counter that references the index of the practice_seq variable 
-var practice_seq = JSON.parse('[{"sequence": "sequence_A", "image": "new_ltq/002131_1", "duration": 250, "num": 1, "depth": 1.73, "image_path": "depth_duration_stimuli/002131_1/002131-original.jpg", "image_path_target": "depth_duration_stimuli/002131_1/002131_1-target.png", "mask_path": "masks/mask_252.jpg", "fixation_path": "fixation.jpg", "sampled": 0}, {"sequence": "sequence_A", "image": "new_ltq/002853_18", "duration": 750, "num": 2, "depth": 1.648, "image_path": "depth_duration_stimuli/002853_18/002853-original.jpg", "image_path_target": "depth_duration_stimuli/002853_18/002853_18-target.png", "mask_path": "masks/mask_129.jpg", "fixation_path": "fixation.jpg", "sampled": 0}, {"sequence": "sequence_A", "image": "new_ltq/002637_8", "duration": 500, "num": 3, "depth": 1.995, "image_path": "depth_duration_stimuli/002637_8/002637-original.jpg", "image_path_target": "depth_duration_stimuli/002637_8/002637_8-target.png", "mask_path": "masks/mask_2.jpg", "fixation_path": "fixation.jpg", "sampled": 0}]')
+var practice_seq = JSON.parse('[{"sequence": "practice", "image": "practice/000496_2014-06-08_22-50-40_260595134347_rgbf000056-resize_5", "duration": 250, "num": 1, "depth": 2.0525, "image_path": "practice/000496_2014-06-08_22-50-40_260595134347_rgbf000056-resize_5/000496_2014-06-08_22-50-40_260595134347_rgbf000056-resize-original.jpg", "image_path_target": "practice/000496_2014-06-08_22-50-40_260595134347_rgbf000056-resize_5/000496_2014-06-08_22-50-40_260595134347_rgbf000056-resize_5-target.png", "mask_path": "masks/mask_252.jpg", "fixation_path": "fixation.jpg", "sampled": 0}, {"sequence": "practice", "image": "practice/003086_2014-06-15_15-24-53_094959634447_rgbf000150-resize_3", "duration": 750, "num": 2, "depth": 3.588, "image_path": "practice/003086_2014-06-15_15-24-53_094959634447_rgbf000150-resize_3/003086_2014-06-15_15-24-53_094959634447_rgbf000150-resize-original.jpg", "image_path_target": "practice/003086_2014-06-15_15-24-53_094959634447_rgbf000150-resize_3/003086_2014-06-15_15-24-53_094959634447_rgbf000150-resize_3-target.png", "mask_path": "masks/mask_129.jpg", "fixation_path": "fixation.jpg", "sampled": 0}, {"sequence": "practice", "image": "practice/001064_2014-06-08_21-58-08_260595134347_rgbf000097-resize_2", "duration": 500, "num": 3, "depth": 1.539, "image_path": "practice/001064_2014-06-08_21-58-08_260595134347_rgbf000097-resize_2/001064_2014-06-08_21-58-08_260595134347_rgbf000097-resize-original.jpg", "image_path_target": "practice/001064_2014-06-08_21-58-08_260595134347_rgbf000097-resize_2/001064_2014-06-08_21-58-08_260595134347_rgbf000097-resize_2-target.png", "mask_path": "masks/mask_2.jpg", "fixation_path": "fixation.jpg", "sampled": 0}]')
 var practiced = false // practice trials have not been completed 
 
 var trial = 0 //counter that references the index of the stim_seq variable
@@ -65,7 +65,7 @@ var counter = 0 // counter for logging
 
 
 // 192 trials in a full experiment 
-var num_trials = 5 // since indexing starts at zero num_trial = actual total trials - 1
+var num_trials = 191 // since indexing starts at zero num_trial = actual total trials - 1
 
 // solves problem of last practice variables being saved in the estimate variable and getting recorded 
 // set to true once trial has actually begun NOT in the beginning of the function because the practice trial is still saved in the estimate variable
@@ -444,18 +444,6 @@ function getResponse(){
 
 }
 
-// function giveBreak(){
-
-//   $(document).ready(function(){
-//     $(".fixationDiv").hide();
-//     $(".sceneDiv").hide();
-//     $(".maskDiv").hide();
-//     $(".responseDiv").hide();
-//     $("#restart_trials").show();
-//     $("#restartTrialsButton").show();
-//   })
-
-// }
 
 function getAge(){
 
